@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sam's Age Calculator</title>
+    <link rel="stylesheet" href="agecalculator.css">
+</head>
+<body>
+<div class="container">
+    <div class="calculator">
+        <h1><br><br>Sam's<br><span>Age Calculator</span></h1>
+        <div class="input-box">
+            <input type="date" id="date" oninput="calculateAge()">
+            <button onclick="calculateAge()">Calculate</button>
+        </div>
+        <p id="result"></p>
+    </div>
+</div>
+
+<script>
+let userInput = document.getElementById("date");
+userInput.max = new Date().toISOString().split("T")[0];
+let result = document.getElementById("result");
+let intervalId; // Declare the intervalId outside the function
+
+// Function to handle key press event on the input field
+userInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        calculateAge();
+    }
+});
+
+function calculateAge(){
+    clearInterval(intervalId); // Clear any existing interval
+
+    let birthDate = new Date(userInput.value);
+    if (isNaN(birthDate.getTime())) { // Check if the date is valid
+        result.innerHTML = "Please enter a valid date.";
+        return; // Stop execution if the date is invalid
+    }
+
+    // Start a new interval
+    intervalId = setInterval(function() {
+        let currentDate = new Date();
+        let diffInSeconds = Math.floor((currentDate - birthDate) / 1000);
+        let diffInMinutes = Math.floor(diffInSeconds / 60);
+        let diffInHours = Math.floor(diffInMinutes / 60);
+        let diffInDays = Math.floor(diffInHours / 24);
+
+        let years = currentDate.getFullYear() - birthDate.getFullYear();
+        let months = currentDate.getMonth() - birthDate.getMonth();
+        let days = currentDate.getDate() - birthDate.getDate();
+
+        if (months < 0 || (months === 0 && days < 0)) {
+            years--;
+            months += 12;
+        }
+
+        if (days < 0) {
+            months--;
+            let previousMonth = (currentDate.getMonth() === 0) ? 11 : currentDate.getMonth() - 1;
+            let previousYear = (previousMonth === 11) ? currentDate.getFullYear() - 1 : currentDate.getFullYear();
+            days += getDaysInMonth(previousYear, previousMonth + 1);
+        }
+
+        result.innerHTML = `You are <span>${years}</span> years, <span>${months}</span> months and <span>${days}</span> days old. <br><br>` +
+                           `That's <span>${diffInDays.toLocaleString()}</span> days, <br>` +
+                           `<span>${diffInHours.toLocaleString()}</span> hours, <br>` +
+                           `<span>${diffInMinutes.toLocaleString()}</span> minutes, <br>` +
+                           `or <span>${diffInSeconds.toLocaleString()}</span> seconds.`;
+    }, 1000);
+}
+
+// Function to get the number of days in a month
+function getDaysInMonth(year, month){
+    return new Date(year, month, 0).getDate();
+}
+
+// Function to clear the interval when navigating away from the page
+window.onbeforeunload = function() {
+    clearInterval(intervalId);
+};
+
+</script>
+</body>
+</html>
